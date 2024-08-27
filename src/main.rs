@@ -1,6 +1,16 @@
 use std::time::Instant;
+mod knapsack;
+mod sequence_allingment;
+use knapsack::Item;
+use knapsack::Knapsack;
+use sequence_allingment::Sequence;
+
 
 fn main() {
+    chama_sequence_alling();
+}
+
+fn chama_knapsack() {
     let lista = [Item{
         value: 1,
         weight:1,
@@ -40,101 +50,27 @@ fn main() {
     println!("Elapsed: {:.2?}", elapsed);
 }
 
-#[derive(Clone)]
-struct Item {
-    value: usize,
-    weight: usize
-}
+fn chama_sequence_alling() {
+    let mut mismatch:Vec<Vec<usize>> = Vec::new();
+    let s1 = "ctgacctacct";
+    let s2 = "cctgactacat";
 
-#[derive(Clone)]
-struct No {
-    valor: usize,
-    visitado: bool
-}
-
-#[derive(Clone)]
-struct Knapsack {
-    items: Vec<Item>,
-    matriz: Vec<Vec<No>>,
-}
-
-impl Knapsack {
-    fn new(items:Vec<Item>) -> Self{
-        let mut matriz:Vec<Vec<No>> = Vec::new();
-        for y in 0..items.len()+1{
-            let mut linha:Vec<No> = Vec::new();
-            for x in 0..11+1{
-                if x==0 || y==0{
-                    let no_add = No {
-                        valor:0,
-                        visitado: true,
-                    };
-
-                    linha.push(no_add);
-                }else {
-                    let no_add = No {
-                        valor:0,
-                        visitado: false,
-                    };
-
-                    linha.push(no_add);
-                }
-            }
-            matriz.push(linha.clone());
+    for _y in 0..s1.len(){
+        let mut linha:Vec<usize> = Vec::new();
+        for _x in 0..s2.len() {
+            linha.push(1);
         }
-        Self {
-            items: items.clone(),
-            matriz: matriz,
-        }
-        
+        mismatch.push(linha.clone());
     }
 
-    fn solve(&mut self, x:usize, y:usize) -> usize{
-        let no_atual = self.matriz[y][x].clone();
-        if no_atual.visitado {
-            return no_atual.valor;
+    let mut obj_sequencia = Sequence::new(s1,s2, mismatch);
+
+    obj_sequencia.populate_matriz(0, 0);
+    
+    for linha in obj_sequencia.matriz {
+        for v in linha {
+            print!("{} | ", v);
         }
-
-        let peso:i32 = self.items[y-1].weight as i32;
-        let adiciona;
-        if (x as i32) - peso >=0 {
-            adiciona = self.solve(x-(peso as usize), y-1) + self.items[y-1].value;
-            
-        }else {
-            adiciona = 0;
-        }
-        let recusa = self.solve(x, y-1);
-
-        let maximo = max(adiciona, recusa);
-        self.matriz[y][x] = No {
-            valor: maximo,
-            visitado:true,
-        };
-        println!("y: {}; x: {}; adicona: {}; recusa: {}; maximo: {}", y, x, adiciona, recusa, maximo);
-
-        maximo
+        println!("");
     }
-
-    fn encontrar_caminho(self, x:usize, y:usize, mut retorno:Vec<Item>) -> Vec<Item>{
-        if y==0 || x == 0{
-            return retorno;
-        }
-        let item =  self.items[y-1].clone();
-        if self.matriz[y][x].valor == self.matriz[y-1][x].valor {
-            
-            return self.encontrar_caminho(x, y-1, retorno);
-        } else{
-            retorno.push(item.clone());
-            return self.encontrar_caminho(x-(item.weight), y-1, retorno);
-        }
-    }
-
-}
-
-fn max(a:usize, b:usize) ->usize{
-    if a>=b{
-        return a
-    }
-
-    b
 }
