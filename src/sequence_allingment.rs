@@ -11,12 +11,16 @@ pub struct Sequence {
 impl Sequence {
     pub fn new(sequencia_1: &str, sequencia_2: &str, mismatch:Vec<Vec<usize>>) -> Self{
         let mut matriz:Vec<Vec<usize>> = Vec::new();
-        for y in 0..sequencia_1.len()+2 {
+        for y in 0..sequencia_1.len()+1 {
             let mut linha = Vec::new();
-            for x in 0..sequencia_2.len()+2 {
-                if x==0 || y ==0{
-                    linha.push(mismatch[y-1][x-1]);
-                } else {
+            for x in 0..sequencia_2.len()+1 {
+                if x==0 && y==0{
+                    linha.push(0);
+                } else if x==0 {
+                    linha.push(mismatch[y-1][x]);
+                } else if y==0 {
+                    linha.push(mismatch[y][x-1]);
+                }else {
                     linha.push(0);
                 }
             }
@@ -33,17 +37,32 @@ impl Sequence {
 
 
     pub fn populate_matriz(&mut self, mut x:usize, mut y:usize){
-        let tamanho_y = self.s1.len()+2;
-        let tamanho_x = self.s2.len()+2;
-        if y==tamanho_y{
-            return;
-        }
+        let tamanho_y = self.s1.len()+1;
+        let tamanho_x = self.s2.len()+1;
         if x ==0 {
             x = x+1;
             y += 1;
         }
+        if y==tamanho_y{
+            return;
+        }
+        let cima = self.matriz[y-1][x]+self.jump;
+        let esquerda = self.matriz[y][x-1]+self.jump;
+        let diagonal;
+        if self.s1.chars().nth(y-1).unwrap() == self.s2.chars().nth(x-1).unwrap(){
+            diagonal = self.matriz[y-1][x-1];
+            println!("IGUAL");
+        } else{
+            diagonal = self.matriz[y-1][x-1]+self.mismatch[y-1][x-1];
+            println!("DIFERENTE");
+        }
+        
+        let min = min(cima,esquerda ,diagonal );
 
-        self.matriz[y][x] = min(self.matriz[y-1][x]+self.jump, self.matriz[y-1][x-1]+self.mismatch[y-1][x-1], self.matriz[y][x-1]+self.jump);
+
+        println!("x: {x} y: {y};  cima: {cima}; esquerda: {esquerda}; diagonal: {diagonal} min: {min}");
+
+        self.matriz[y][x] = min;
         
         self.populate_matriz((x+1)% tamanho_x, y)
 
@@ -51,11 +70,10 @@ impl Sequence {
 }
 
 fn min(a:usize, b:usize, c:usize) -> usize{
-    if a>b && b<c{
+    if (a<b) && a<c{
+        return a;
+    } else if b<a && b<c {
         return b;
-    } else if a>b && c<b {
-        return c;
     }
-
-    a
+    c
 }

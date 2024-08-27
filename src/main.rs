@@ -67,6 +67,9 @@ fn chama_sequence_alling() {
 
     obj_sequencia.populate_matriz(0, 0);
     
+    println!("{}", obj_sequencia.s2);
+    println!("{}", obj_sequencia.s1);
+
     for linha in obj_sequencia.matriz {
         for v in linha {
             print!("{} | ", v);
